@@ -7,126 +7,114 @@ import express from "express";
 const app = express();
 const port = 3000;
 
-// middleware
-app.use(express.json());
-
-// app.use((req, res, next) => {
-//   console.log("Time:", Date.now());
-//   next();
+// app.get("/", (req, res) => {
+//   res.send("Hello World!");
 // });
 
-const users = [];
+const Todo = [];
+app.use(express.json());
 
-app.get("/", (req, res) => {
-    res.send("hello world!");
+// To add todo:
+app.post("/todo", (req, res) => {
+  const { title } = req.body;
+  if (!title) {
+    res.status(400).json({
+      message: "You must add todo",
+    });
+    return;
+  }
+
+  Todo.push({
+    id: Date.now(),
+    title,
+  });
+  res.status(200).json({
+    message: "Todo entered successfully",
+    Todo,
+  });
 });
 
-// add new user
-app.post("/user", (req, res) => {
-    const { title } = req.body;
-    if (!title) {
-        res.status(400).json({
-            message: "title is required",
-        });
-        return;
-    }
-
-    users.push({
-        title,
-        id: Date.now(),
-    });
-
-    res.status(201).json({
-        message: "user is created",
-        data: users,
-    });
-});
-
-// get all user
-app.get("/users", (req, res) => {
-    res.status(200).json({
-        data: users,
-    });
-});
-
-// get single user
-app.get("/user/:id", (req, res) => {
-    const { id } = req.params;
-
-    const index = users.findIndex((item) => item.id === +id);
-
-    if (index === -1) {
-        res.status(404).json({
-            message: "user not found",
-        });
-        return;
-    }
-
-    res.status(200).json({
-        data: users[index],
-    });
-});
-
-app.delete(`/user/:id`, (req, res) => {
-    const { id } = req.params;
-
-    const index = users.findIndex((item) => {
-        return item.id === +id
-    })
-
-    if (index === -1) {
-        res.status(404).json({
-            message: `no user found`
-        })
-        return;
-    }
-    users.splice(index, 1)
-    res.status(200).json({
-        message: `user deleted successfully`,
-        data: users,
-    })
-
-})
-
-
-app.put("/todo/:id", (req, res) => {
-    const { id } = req.params;
-    const index = Todo.findIndex((item) => item.id === +id);
-    if (index === -1) {
-      res.status(400).json({
-        message: "No todo found",
-      });
-      return;
-    }
-    Todo.splice(index, 1);
-    const { editTodo } = req.body;
-  
-    if (!editTodo) {
-      res.status(400).json({
-        message: "First edit a Todo",
-      });
-      return;
-    }
-    Todo[index] = {
-      ...Todo[index],
-      id,
-      title: editTodo,
-    };
-    res.status(200).json({
-      message: "Todo Edited Successfully",
+// To get all todos:
+app.get("/todos", (req, res) => {
+  if (Todo.length === 0) {
+    res.status(400).json({
+      message: "No todos entered yet",
       Todo,
     });
+    return;
+  }
+  res.status(200).json({
+    message: "ALL Todos =>",
+    Todo,
   });
-
-
-
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
 });
 
-// get
-// post
-// delete
-// put
+// To get single todo:
+app.post("/todo/:id", (req, res) => {
+  const { id } = req.params;
+  const index = Todo.findIndex((item) => item.id === +id);
 
-// 404 not found
+  if (index === -1) {
+    res.status(400).json({
+      message: "No todo found",
+    });
+    return;
+  }
+  res.status(200).json({
+    message: "Your Todo",
+    Data: Todo[index],
+  });
+});
+
+// To delete Specific Todo:
+
+app.delete("/todo/:id", (req, res) => {
+  const { id } = req.params;
+  const index = Todo.findIndex((item) => item.id === +id);
+  if (index === -1) {
+    res.status(400).json({
+      message: "No todo found",
+    });
+    return;
+  }
+  Todo.splice(index, 1);
+  res.status(200).json({
+    message: "Todo Deleted Successfully",
+    Todo,
+  });
+});
+
+// To edit Todo:
+
+app.put("/todo/:id", (req, res) => {
+  const { id } = req.params;
+  const index = Todo.findIndex((item) => item.id === +id);
+  if (index === -1) {
+    res.status(400).json({
+      message: "No todo found",
+    });
+    return;
+  }
+  Todo.splice(index, 1);
+  const { editTodo } = req.body;
+
+  if (!editTodo) {
+    res.status(400).json({
+      message: "You must add new edited todo",
+    });
+    return;
+  }
+  Todo[index] = {
+    ...Todo[index],
+    id,
+    title: editTodo,
+  };
+  res.status(200).json({
+    message: "Todo Edited Successfully",
+    Todo,
+  });
+});
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);
+});
