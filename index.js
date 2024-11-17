@@ -5,7 +5,7 @@ dotenv.config();
 import express from "express";
 
 const app = express();
-const port = process.env.PORT;
+const port = 3000;
 
 // middleware
 app.use(express.json());
@@ -87,6 +87,38 @@ app.delete(`/user/:id`, (req, res) => {
     })
 
 })
+
+
+app.put("/todo/:id", (req, res) => {
+    const { id } = req.params;
+    const index = Todo.findIndex((item) => item.id === +id);
+    if (index === -1) {
+      res.status(400).json({
+        message: "No todo found",
+      });
+      return;
+    }
+    Todo.splice(index, 1);
+    const { editTodo } = req.body;
+  
+    if (!editTodo) {
+      res.status(400).json({
+        message: "First edit a Todo",
+      });
+      return;
+    }
+    Todo[index] = {
+      ...Todo[index],
+      id,
+      title: editTodo,
+    };
+    res.status(200).json({
+      message: "Todo Edited Successfully",
+      Todo,
+    });
+  });
+
+
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
